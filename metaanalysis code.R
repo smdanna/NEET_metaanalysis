@@ -72,6 +72,11 @@ svg(file='forestplot_default.svg', width = 9, height = 27)
 forest.jama<-forest(meta.test)
 dev.off() 
 
+# saving default plot as pdf
+pdf(file='forestplot_default.pdf', width = 9, height = 27) 
+forest.jama<-forest(meta.test)
+dev.off() 
+
 # into JAMA layout
 forest(meta.test,
        layout = "JAMA",
@@ -86,7 +91,7 @@ forest.jama<-forest(meta.test,
                     col.predict = "black")
 dev.off() 
 
-# SUBGROUP ANALYSIS
+# SUBGROUP ANALYSIS by mental health measure
 
 MHmeasure.subgroup<-update.meta(meta.test, 
                              byvar=MH_measure, 
@@ -94,14 +99,41 @@ MHmeasure.subgroup<-update.meta(meta.test,
                              comb.fixed = FALSE)
 MHmeasure.subgroup
 
-# saving default plot
-svg(file='forestplot_default_subgrp.svg', width = 9, height = 36) 
+# saving default plot as SVG
+# svg(file='forestplot_default_subgrp.svg', width = 9, height = 36) 
+# forest.subgrp<-forest(MHmeasure.subgroup)
+# dev.off() 
+
+# saving default plot as PDF
+pdf(file='forestplot_default_subgrp.pdf', width = 9, height = 36) 
 forest.subgrp<-forest(MHmeasure.subgroup)
 dev.off() 
 
-#### a simpler command ----
-# https://stackoverflow.com/questions/35636805/meta-analysis-in-r-with-adjusted-ors
+# SUBGROUP ANALYSIS by MH measure ONLY where Subgroup=all and not NA (should only be 1 per study)
 
-res <- rma(OR_ln, SE, data=neet, method="DL")
-forest(res)
-forest()
+neet.sub.all <- neet[which(neet$Subgroup=="all" & !is.na(neet$OR_ln)),]
+View(neet.sub.all)
+
+
+meta.MH.all <- metagen(OR_ln,
+                     SE,
+                     data=neet.sub.all,
+                     studlab=paste(study_no),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MH.all
+
+subgroup.MH.all<-update.meta(meta.MH.all, 
+                                byvar=MH_measure, 
+                                comb.random = TRUE, 
+                                comb.fixed = FALSE)
+subgroup.MH.all
+
+# saving default plot
+pdf(file='forestplot_subgroup_MH_all.pdf', width = 9, height = 24) 
+forest.subgrp<-forest(subgroup.MH.all)
+dev.off() 
