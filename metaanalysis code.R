@@ -1114,6 +1114,17 @@ head(MHany.Gall.rep0)
 # 117 Rodwell, 2018 Australia rodwell 2018 1      Common mental disorders               MH-->NEET
 
 
+meta.MHany.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHany.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHany.Gall.rep0
 
 
 meta.MHany.Gall.rep0.dir<-update.meta(meta.MHany.Gall.rep0, 
@@ -1181,3 +1192,6 @@ head(MHany.Gbg.rep0)
 # <0 rows>
 
 
+#### Checking results #######################################################################################
+
+write.csv(neet2,'neet2.csv')
