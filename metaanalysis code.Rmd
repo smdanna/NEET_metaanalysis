@@ -89,14 +89,32 @@ forest(meta.MHdis.Gall.rep0)
 ### DISTRESS - directionality
 
 ```{r}
-meta.MHdis.Gall.rep0.dir<-update.meta(meta.MHdis.Gall.rep0, 
+
+MHdis.Gall.rep1 <- neet2[which(neet2$Distress==1 & neet2$Gender=="all"),]
+
+head(MHdis.Gall.rep1)
+
+
+meta.MHdis.Gall.rep1 <- metagen(OR_ln,
+                     SE,
+                     data=MHdis.Gall.rep1,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHdis.Gall.rep1
+
+meta.MHdis.Gall.rep1.dir<-update.meta(meta.MHdis.Gall.rep0, 
                                  byvar=Temporality.of.measures, 
                                  comb.random = TRUE, 
                                  comb.fixed = FALSE)
-meta.MHdis.Gall.rep0.dir
+meta.MHdis.Gall.rep1.dir
 
 
-forest(meta.MHdis.Gall.rep0.dir)
+forest(meta.MHdis.Gall.rep1.dir)
 ```
 
 
@@ -171,13 +189,30 @@ meta.MHmood.Gall.rep0
 ### MOOD - directionality
 
 ```{r}
-meta.MHmood.Gall.rep0.dir<-update.meta(meta.MHmood.Gall.rep0, 
+MHmood.Gall.rep1 <- neet2[which(neet2$Mood==1 & neet2$Gender=="all"),]
+
+head(MHmood.Gall.rep1)
+
+
+meta.MHmood.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHmood.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHmood.Gall.rep1
+
+meta.MHmood.Gall.rep1.dir<-update.meta(meta.MHmood.Gall.rep1, 
                                       byvar=Temporality.of.measures, 
                                       comb.random = TRUE, 
                                       comb.fixed = FALSE)
-meta.MHmood.Gall.rep0.dir
+meta.MHmood.Gall.rep1.dir
 
-forest(meta.MHmood.Gall.rep0.dir)
+forest(meta.MHmood.Gall.rep1.dir)
 ```
 
 
@@ -229,13 +264,28 @@ meta.MHanx.Gall.rep0
 ### ANXIETY - directionality
 
 ```{r}
-meta.MHanx.Gall.rep0.dir<-update.meta(meta.MHanx.Gall.rep0, 
+MHanx.Gall.rep1 <- neet2[which(neet2$Anxiety==1 & neet2$Gender=="all"),]
+
+head(MHanx.Gall.rep1)
+
+meta.MHanx.Gall.rep1 <- metagen(OR_ln,
+                                 SE,
+                                 data=MHanx.Gall.rep1,
+                                 studlab=paste(Study),
+                                 comb.fixed = FALSE,
+                                 comb.random = TRUE,
+                                 method.tau = "DL",
+                                 hakn = FALSE,
+                                 prediction=FALSE,
+                                 sm="OR")
+meta.MHanx.Gall.rep1
+meta.MHanx.Gall.rep1.dir<-update.meta(meta.MHanx.Gall.rep1, 
                                        byvar=Temporality.of.measures, 
                                        comb.random = TRUE, 
                                        comb.fixed = FALSE)
-meta.MHanx.Gall.rep0.dir
+meta.MHanx.Gall.rep1.dir
 
-forest(meta.MHanx.Gall.rep0.dir)
+forest(meta.MHanx.Gall.rep1.dir)
 ```
 
 
@@ -307,13 +357,29 @@ meta.MHbeh.Gall.rep0
 ### BEHAVIOURAL - directionality
 
 ```{r}
-meta.MHbeh.Gall.rep0.dir<-update.meta(meta.MHbeh.Gall.rep0, 
+MHbeh.Gall.rep1 <- neet2[which(neet2$Behavioral==1 & neet2$Gender=="all"),]
+
+head(MHbeh.Gall.rep1)
+
+meta.MHbeh.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHbeh.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHbeh.Gall.rep1
+
+meta.MHbeh.Gall.rep1.dir<-update.meta(meta.MHbeh.Gall.rep1, 
                                       byvar=Temporality.of.measures, 
                                       comb.random = TRUE, 
                                       comb.fixed = FALSE)
-meta.MHbeh.Gall.rep0.dir
+meta.MHbeh.Gall.rep1.dir
 
-forest(meta.MHbeh.Gall.rep0.dir)
+forest(meta.MHbeh.Gall.rep1.dir)
 ```
 
 
@@ -385,13 +451,30 @@ meta.MHalc.Gall.rep0
 ### ALCOHOL - directionality
 
 ```{r}
-meta.MHalc.Gall.rep0.dir<-update.meta(meta.MHalc.Gall.rep0, 
+
+MHalc.Gall.rep1 <- neet2[which(neet2$Alcohol==1 & neet2$Gender=="all"),]
+
+head(MHalc.Gall.rep1)
+
+meta.MHalc.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHalc.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHalc.Gall.rep1
+
+meta.MHalc.Gall.rep1.dir<-update.meta(meta.MHalc.Gall.rep1, 
                                       byvar=Temporality.of.measures, 
                                       comb.random = TRUE, 
                                       comb.fixed = FALSE)
-meta.MHalc.Gall.rep0.dir
+meta.MHalc.Gall.rep1.dir
 
-forest(meta.MHalc.Gall.rep0.dir)
+forest(meta.MHalc.Gall.rep1.dir)
 ```
 
 
@@ -501,13 +584,29 @@ meta.MHdrg.Gall.rep0
 ### DRUG - directionality
 
 ```{r}
-meta.MHdrg.Gall.rep0.dir<-update.meta(meta.MHdrg.Gall.rep0, 
+MHdrg.Gall.rep1 <- neet2[which(neet2$Drug==1 & neet2$Gender=="all"),]
+
+head(MHdrg.Gall.rep1)
+
+meta.MHdrg.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHdrg.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHdrg.Gall.rep1
+
+meta.MHdrg.Gall.rep1.dir<-update.meta(meta.MHdrg.Gall.rep1, 
                                       byvar=Temporality.of.measures, 
                                       comb.random = TRUE, 
                                       comb.fixed = FALSE)
-meta.MHdrg.Gall.rep0.dir
+meta.MHdrg.Gall.rep1.dir
 
-forest(meta.MHdrg.Gall.rep0.dir)
+forest(meta.MHdrg.Gall.rep1.dir)
 ```
 
 
@@ -580,13 +679,29 @@ meta.MHsui.Gall.rep0
 ### SUICIDAL - directionality
 
 ```{r}
-meta.MHsui.Gall.rep0.dir<-update.meta(meta.MHsui.Gall.rep0, 
+MHsui.Gall.rep1 <- neet2[which(neet2$Suicidal==1 & neet2$Gender=="all"),]
+
+head(MHsui.Gall.rep1)
+
+meta.MHsui.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHsui.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHsui.Gall.rep1
+
+meta.MHsui.Gall.rep1.dir<-update.meta(meta.MHsui.Gall.rep1, 
                                       byvar=Temporality.of.measures, 
                                       comb.random = TRUE, 
                                       comb.fixed = FALSE)
-meta.MHsui.Gall.rep0.dir
+meta.MHsui.Gall.rep1.dir
 
-forest(meta.MHsui.Gall.rep0.dir)
+forest(meta.MHsui.Gall.rep1.dir)
 ```
 
 ### SUICIDAL - geography
