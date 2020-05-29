@@ -1,0 +1,975 @@
+---
+title: "NEET and mental health meta-analyses"
+author: "Sofia Danna"
+date: 29 May 2020
+output:
+  html_document:
+    df_print: paged
+---
+
+# Mise en place
+
+* Code
+    + The completed code in this document was written using dplyr; the analyses that are "commented out" have yet to be translated. In order to check the results of translated code against previous correct results, use Results - metaanalysis 20200507.html.
+
+* Analysis: 
+    + The following tutorial was used for analyses: <https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/> 
+    + Main analyses are random effects models; subgroup analyses are fixed effects models.
+
+* Data
+    + The neet dataframe was updated several times as analyses developed. As of May 25, 2020, all analyses can run using this unified dataset. The Repeated_measures column was created by Gen to avoid repeated (overlapping) samples being pooled together in main analyses. However, different estimates may overlap in other ways in different analyses, so columns beginning with rep_ were added to the end of the dataset to help eliminate estimates that need to be removed for each analysis (i.e., rep_dis.gender for the gender subgroup analysis of distress estimates).
+
+```{r}
+# On Sofia's Douglas Windows computer
+#neet <- read.csv("C:/Users/dansof/Dropbox/PEPP new/NEET meta-analysis/metaanalysis/neet 20200525.csv")
+
+# On Sofia's personal Mac
+neet <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet 20200525.csv")
+```
+
+code used to derive ln of OR, CI limits, and SE and re-write dataframe
+```{r eval=FALSE}
+neet <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet 20200525.csv")
+View(neet)
+
+#deriving OR and limits
+neet$OR_ln <- log(neet$OR)
+neet$lower_ln <- log(neet$LowerCI)
+neet$upper_ln <- log(neet$UpperCI)
+
+#deriving SE [ (upper_ln - lower_ln) / 3.92 ]
+neet$SE <- ((neet$upper_ln-neet$lower_ln)/3.92)
+
+View(neet)
+
+write.csv(neet,'neet 20200525.csv')
+```
+
+checking out the variables in the dataframe
+```{r}
+neet
+str(neet)
+```
+
+installing and loading meta package
+```{r message=FALSE, warning=FALSE}
+install.packages("meta", repos = "http://cran.us.r-project.org")
+install.packages("dplyr", repos = "http://cran.us.r-project.org")
+library(meta)
+library(metafor)
+library(dplyr)
+```
+
+Parameter       | Function
+----------------|---------------------------------------------------------------------------------
+TE	            | This tells R to use the TE column to retrieve the effect sizes for each study
+seTE	          | This tells R to use the seTE column to retrieve the standard error for each study
+data=	          | After =, paste the name of your dataset here
+studlab=paste()	|  This tells the function were the labels for each study are stored. If you named the spreadsheet columns as advised, this should be studlab=paste(Author)
+comb.fixed=	    | Whether to use a fixed-effects-model
+comb.random=	  | Whether to use a random-effects-model. This has to be set to TRUE
+method.tau=	    | Which estimator to use for the between-study variance
+hakn=	          |   Whether to use the Knapp-Hartung method
+prediction=	    | Whether to print a prediction interval for the effect of future studies based on present evidence
+sm=	            | The summary measure we want to calculate. We can either calculate the mean difference (MD) or Hedges’ g (SMD)
+
+Using the instructions from the tutorial by Mathias Harrer (url above),
+
+instead of | we will use
+-----------|-----------
+"Author"   | "Study"
+"TE"       | "OR_ln"
+"seTE"     | "SE"
+
+# Analyses: Mental health measure
+
+## DISTRESS
+
+```{r}
+dis <- filter(neet, Distress==1 & is.na(Repeated_sample)==TRUE & is.na(rep_dis)==TRUE)
+
+dis
+
+meta.dis <- metagen(OR_ln,
+                    SE,
+                    data=dis,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.dis
+
+forest(meta.dis)
+```
+
+### DISTRESS - directionality
+
+```{r}
+dis.dir <- filter(neet, Distress==1 & Gender=="all")
+
+dis.dir
+
+meta.dis.dir <- metagen(OR_ln,
+                        SE,
+                        data=dis.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.dis.dir<-update.meta(meta.dis.dir,
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.dis.dir
+
+forest(meta.dis.dir)
+```
+
+### DISTRESS - age
+
+```{r}
+dis.age <- filter(neet, Distress==1 & Gender=="all" & is.na(Age_at_interview)==FALSE)
+
+dis.age
+
+meta.dis.age <- metagen(OR_ln,
+                        SE,
+                        data=dis.age,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.dis.age<-update.meta(meta.dis.age, 
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.dis.age
+
+forest(meta.dis.age)
+```
+
+### DISTRESS - gender
+
+```{r}
+dis.gen <- filter(neet, Distress==1 & Gender!="all" & is.na(Repeated_sample))
+
+dis.gen
+
+meta.dis.gen <- metagen(OR_ln,
+                        SE,
+                        data=dis.gen,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.dis.gen<-update.meta(meta.dis.gen,
+                          byvar=Gender, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.dis.gen
+
+forest(meta.dis.gen)
+```
+
+***
+
+## MOOD 
+
+```{r}
+mood <- filter(neet, Mood==1 & Gender=="all" & is.na(Repeated_sample))
+
+mood
+
+meta.mood <- metagen(OR_ln,
+                     SE,
+                     data=mood,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+
+meta.mood
+
+forest(meta.mood)
+```
+
+### MOOD - directionality
+
+```{r}
+mood.dir <- filter(neet, Mood==1 & Gender=="all")
+ 
+mood.dir
+
+meta.mood.dir <- metagen(OR_ln,
+                         SE,
+                         data=mood.dir,
+                         studlab=paste(Study),
+                         comb.fixed = FALSE,
+                         comb.random = TRUE,
+                         method.tau = "DL",
+                         hakn = FALSE,
+                         prediction=FALSE,
+                         sm="OR")
+
+meta.mood.dir<-update.meta(meta.mood.dir,
+                           byvar=Temporality.of.measures, 
+                           comb.random = F, 
+                           comb.fixed = T)
+
+meta.mood.dir
+ 
+forest(meta.mood.dir)
+```
+
+### MOOD - age
+
+```{r}
+mood.age <- filter(neet, Mood==1 & Gender=="all" & is.na(rep_mood.age) & is.na(Age_at_interview)==FALSE)
+
+mood.age
+
+meta.mood.age <- metagen(OR_ln,
+                         SE,
+                         data=mood.age,
+                         studlab=paste(Study),
+                         comb.fixed = FALSE,
+                         comb.random = TRUE,
+                         method.tau = "DL",
+                         hakn = FALSE,
+                         prediction=FALSE,
+                         sm="OR")
+
+meta.mood.age<-update.meta(meta.mood.age,
+                           byvar=Age_at_interview, 
+                           comb.random = F, 
+                           comb.fixed = T)
+
+meta.mood.age
+
+forest(meta.mood.age)
+```
+
+### MOOD - gender
+
+```{r}
+mood.gen <- filter(neet, Mood==1 & Gender!="all")
+
+mood.gen
+```
+
+***
+
+## ANXIETY 
+
+```{r}
+anx <- filter(neet, Anxiety==1 & Gender=="all" & is.na(Repeated_sample))
+
+anx
+
+meta.anx <- metagen(OR_ln,
+                    SE,
+                    data=anx,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.anx
+
+forest(meta.anx)
+```
+
+### ANXIETY - directionality
+
+```{r}
+anx.dir <- filter(neet, Anxiety==1 & Gender=="all")
+
+anx.dir
+
+meta.anx.dir <- metagen(OR_ln,
+                        SE,
+                        data=anx.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.anx.dir<-update.meta(meta.anx.dir,
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.anx.dir
+
+forest(meta.anx.dir)
+```
+
+### ANXIETY - age
+
+```{r}
+anx.age <- filter(neet, Anxiety==1 & Gender=="all" & is.na(rep_anx.age) & is.na(Age_at_interview)==FALSE)
+
+anx.age
+
+meta.anx.age <- metagen(OR_ln,
+                        SE,
+                        data=anx.age,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.anx.age<-update.meta(meta.anx.age, 
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.anx.age
+
+forest(meta.anx.age)
+```
+
+### ANXIETY - gender
+
+```{r}
+anx.gen <- filter(neet, Anxiety==1 & Gender!="all" & is.na(Repeated_sample))
+
+anx.gen
+
+meta.anx.gen <- metagen(OR_ln,
+                        SE,
+                        data=anx.gen,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.anx.gen<-update.meta(meta.anx.gen, 
+                          byvar=Gender, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.anx.gen
+
+forest(meta.anx.gen)
+```
+
+***
+
+## BEHAVIOURAL
+
+```{r}
+beh <- filter(neet, Behavioral==1 & Gender=="all" & is.na(Repeated_sample) & is.na(rep_beh))
+
+beh
+
+meta.beh <- metagen(OR_ln,
+                    SE,
+                    data=beh,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.beh
+
+forest(meta.beh)
+```
+
+### BEHAVIOURAL - directionality
+
+```{r}
+beh.dir <- filter(neet, Behavioral==1 & Gender=="all")
+ 
+beh.dir
+ 
+meta.beh.dir <- metagen(OR_ln,
+                        SE,
+                        data=beh.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.beh.dir<-update.meta(meta.beh.dir,
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.beh.dir
+ 
+forest(meta.beh.dir)
+```
+
+### BEHAVIOURAL - age
+
+```{r}
+beh.age <- filter(neet, Behavioral==1 & Gender=="all" & is.na(rep_beh.age) & is.na(Age_at_interview)==FALSE)
+
+beh.age
+
+meta.beh.age <- metagen(OR_ln,
+                        SE,
+                        data=beh.age,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.beh.age<-update.meta(meta.beh.age,
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.beh.age
+
+forest(meta.beh.age)
+```
+
+### BEHAVIOURAL - gender
+
+```{r}
+beh.gen <- filter(neet, Behavioral==1 & Gender!="all" & is.na(Repeated_sample))
+
+beh.gen
+
+meta.beh.gen <- metagen(OR_ln,
+                        SE,
+                        data=beh.gen,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.beh.gen<-update.meta(meta.beh.gen,
+                          byvar=Gender, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.beh.gen
+
+forest(meta.beh.gen)
+```
+
+***
+
+## ALCOHOL
+
+```{r}
+alc <- filter(neet, Alcohol==1 & Gender=="all" & is.na(Repeated_sample))
+
+alc
+
+meta.alc <- metagen(OR_ln,
+                    SE,
+                    data=alc,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.alc
+
+forest(meta.alc)
+```
+
+### ALCOHOL - directionality
+
+```{r}
+alc.dir <- filter(neet, Alcohol==1 & Gender=="all")
+
+alc.dir
+
+meta.alc.dir <- metagen(OR_ln,
+                        SE,
+                        data=alc.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.alc.dir<-update.meta(meta.alc.dir,
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.alc.dir
+
+forest(meta.alc.dir)
+```
+
+### ALCOHOL - age
+
+```{r}
+alc.age <- filter(neet, Alcohol==1 & Gender=="all" & is.na(rep_alc.age) & is.na(Age_at_interview)==FALSE)
+
+alc.age
+
+meta.alc.age <- metagen(OR_ln,
+                     SE,
+                     data=alc.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+
+meta.alc.age<-update.meta(meta.alc.age,
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.alc.age
+
+forest(meta.alc.age)
+```
+
+### ALCOHOL - gender
+
+```{r}
+alc.gen <- filter(neet, Alcohol==1 & Gender!="all")
+
+alc.gen
+```
+
+***
+
+## CANNABIS
+
+```{r}
+can <- filter(neet, Cannabis==1 & Gender=="all" & is.na(Repeated_sample))
+
+can
+
+meta.can <- metagen(OR_ln,
+                    SE,
+                    data=can,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.can
+
+forest(meta.can)
+```
+
+### CANNABIS - directionality
+
+```{r}
+meta.can.dir<-update.meta(meta.can,
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.can.dir
+
+forest(meta.can.dir)
+```
+
+### CANNABIS - age
+
+```{r}
+can.age <- filter(neet, Cannabis==1 & Gender=="all" & is.na(Age_at_interview)==FALSE)
+
+can.age
+
+meta.can.age <- metagen(OR_ln,
+                     SE,
+                     data=can.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+
+meta.can.age<-update.meta(meta.can.age, 
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.can.age
+
+forest(meta.can.age)
+```
+
+### CANNABIS - gender
+
+```{r}
+can.gen <- filter(neet, Cannabis==1 & Gender!="all")
+
+can.gen
+```
+
+***
+
+## DRUG 
+
+```{r}
+drg <- filter(neet, Drug==1 & Gender=="all" & is.na(Repeated_sample) & is.na(rep_drg))
+
+drg
+
+meta.drg <- metagen(OR_ln,
+                    SE,
+                    data=drg,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.drg
+
+forest(meta.drg)
+```
+
+### DRUG - directionality
+
+```{r}
+drg.dir <- filter(neet, Drug==1 & Gender=="all")
+
+drg.dir
+
+meta.drg.dir <- metagen(OR_ln,
+                        SE,
+                        data=drg.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.drg.dir<-update.meta(meta.drg.dir,
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.drg.dir
+
+forest(meta.drg.dir)
+```
+
+### DRUG - age
+
+```{r}
+drg.age <- filter(neet, Drug==1 & Gender=="all" & is.na(rep_drg.age) & is.na(Age_at_interview)==FALSE)
+
+drg.age
+
+meta.drg.age <- metagen(OR_ln,
+                        SE,
+                        data=drg.age,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.drg.age<-update.meta(meta.drg.age,
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.drg.age
+
+forest(meta.drg.age)
+```
+
+### DRUG - gender
+
+```{r}
+drg.gen <- filter(neet, Drug==1 & Gender!="all" & is.na(Repeated_sample))
+
+drg.gen
+
+meta.drg.gen <- metagen(OR_ln,
+                        SE,
+                        data=drg.gen,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.drg.gen<-update.meta(meta.drg.gen, 
+                          byvar=Gender, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.drg.gen
+
+forest(meta.drg.gen)
+```
+
+***
+
+## SUICIDAL
+
+```{r}
+sui <- filter(neet, Suicidal==1 & Gender=="all" & is.na(Repeated_sample))
+
+sui
+
+meta.sui <- metagen(OR_ln,
+                    SE,
+                    data=sui,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.sui
+
+forest(meta.sui)
+```
+
+### SUICIDAL - directionality
+
+```{r}
+sui.dir <- filter(neet, Suicidal==1 & Gender=="all")
+
+sui.dir
+
+meta.sui.dir <- metagen(OR_ln,
+                        SE,
+                        data=sui.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.sui.dir<-update.meta(meta.sui.dir, 
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.sui.dir
+
+forest(meta.sui.dir)
+```
+
+### SUICIDAL - age
+
+```{r}
+sui.age <- filter(neet, Suicidal==1 & Gender=="all" & is.na(rep_sui.age) & is.na(Age_at_interview)==FALSE)
+
+sui.age
+
+meta.sui.age <- metagen(OR_ln,
+                        SE,
+                        data=sui.age,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.sui.age<-update.meta(meta.sui.age, 
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.sui.age
+
+forest(meta.sui.age)
+```
+
+Pooling *suicidal attempts* in youth aged 18 and over, i.e., Power 2015 (OR 3.1) and Gutierrez 2018 (OR 2.75)
+
+```{r}
+suiatt <- filter(neet, Mental.health.measures %in% c("Suicidal attempt", "Suicidal attempts (lifetime)") & 
+              Gender=="all" & Age_at_interview==">=18" & is.na(rep_sui.age))
+
+suiatt
+                          
+meta.suiatt <- metagen(OR_ln,
+                     SE,
+                     data=suiatt,
+                     studlab=paste(Study),
+                     comb.fixed = T,
+                     comb.random = F,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+
+meta.suiatt
+
+forest(meta.suiatt)
+```
+
+### SUICIDAL - gender
+
+```{r}
+sui.gen <- filter(neet, Suicidal==1 & Gender!="all")
+
+sui.gen
+```
+
+***
+
+## ANY
+
+Gen says to use Power 2015's "Any lifetime disorder" for main analysis
+```{r}
+any <- filter(neet, Any==1 & Gender=="all" & is.na(rep_any))
+
+any
+
+meta.any <- metagen(OR_ln,
+                    SE,
+                    data=any,
+                    studlab=paste(Study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.any
+
+forest(meta.any)
+```
+
+### ANY - directionality
+
+Gen says to use Power 2015's "Any diagnosis in adol" for directionality subgroup analysis
+```{r}
+any.dir <- filter(neet, Any==1 & Gender=="all" & is.na(rep_any.dir))
+
+any.dir
+
+meta.any.dir <- metagen(OR_ln,
+                        SE,
+                        data=any.dir,
+                        studlab=paste(Study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.any.dir<-update.meta(meta.any.dir, 
+                          byvar=Temporality.of.measures, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.any.dir
+
+forest(meta.any.dir)
+```
+
+### ANY - age
+
+using "Any lifetime disorder" because it's the more comprehensive measure
+```{r}
+any.age  <- filter(neet, Any==1 & Gender=="all" & is.na(rep_any))
+
+any.age
+
+meta.any.age <- metagen(OR_ln,
+                     SE,
+                     data=any.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+
+meta.any.age<-update.meta(meta.any.age, 
+                          byvar=Age_at_interview, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.any.age
+
+forest(meta.any.age)
+```
+
+### ANY - gender
+
+```{r}
+any.gen <- filter(neet, Any==1 & Gender!="all")
+
+any.gen
+```
