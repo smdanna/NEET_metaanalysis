@@ -1,0 +1,1055 @@
+---
+title: "NEET and mental health meta-analyses"
+author: "Sofia Danna"
+date: 25 May 2020
+output:
+  html_document:
+    df_print: paged
+---
+
+
+# Mise en place
+
+* Code: the following tutorial will be used for analyses <https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/> 
+
+* Analysis: main analyses will use random effects models; subgroup analyses will be fixed effects models
+
+* Data
+    + neet2 is the updated dataset that Gen and I decided on on 18 October 2019. By only using observations where Repeated_measures=NA, there should no longer be any repeated samples pooled together. All variables should be accurately re-derived. This is the dataset Sofia saved after cleaning data in R.
+    + neet3 is the same as neet2 but includes the information on age, to be used only for the age subgroup analysis
+    + ON MAY 23 I want to use only neet3 and translate everything using dplyr
+
+```{r}
+# On Sofia's Douglas Windows computer
+#neet2 <- read.csv("C:/Users/dansof/Dropbox/PEPP new/NEET meta-analysis/metaanalysis/neet2.csv")
+#neet3 <- read.csv("C:/Users/dansof/Dropbox/PEPP new/NEET meta-analysis/metaanalysis/neet3.csv")
+
+# On Sofia's personal Mac
+neet2 <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet2.csv")
+neet3 <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet3.csv")
+```
+
+checking out the variables in the updated NEET dataframe
+```{r}
+neet2
+str(neet2)
+neet3
+str(neet3)
+```
+
+
+installing and loading meta package
+```{r message=FALSE, warning=FALSE}
+install.packages("meta", repos = "http://cran.us.r-project.org")
+install.packages("dplyr", repos = "http://cran.us.r-project.org")
+library(meta)
+library(metafor)
+library(dplyr)
+```
+
+
+Parameter       | Function
+----------------|---------------------------------------------------------------------------------
+TE	            | This tells R to use the TE column to retrieve the effect sizes for each study
+seTE	          | This tells R to use the seTE column to retrieve the standard error for each study
+data=	          | After =, paste the name of your dataset here
+studlab=paste()	|  This tells the function were the labels for each study are stored. If you named the spreadsheet columns as advised, this should be studlab=paste(Author)
+comb.fixed=	    | Whether to use a fixed-effects-model
+comb.random=	  | Whether to use a random-effects-model. This has to be set to TRUE
+method.tau=	    | Which estimator to use for the between-study variance
+hakn=	          |   Whether to use the Knapp-Hartung method
+prediction=	    | Whether to print a prediction interval for the effect of future studies based on present evidence
+sm=	            | The summary measure we want to calculate. We can either calculate the mean difference (MD) or Hedges’ g (SMD)
+
+
+Using the instructions from the tutorial by Mathias Harrer (url above),
+
+instead of | we will use
+-----------|-----------
+"Author"   | "Study"
+"TE"       | "OR_ln"
+"seTE"     | "SE"
+
+
+# Analyses: Mental health measure
+
+
+## DISTRESS
+distress = 1, gender = all, repeated sample = 0
+
+```{r}
+# MHdis.Gall.rep0 <- neet2[which(neet2$Distress==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+MHdis.Gall.rep0 <- filter(neet3, Distress==1 & Gender=="all" & is.na(Repeated_sample)==TRUE & is.na(Age_at_interview)==TRUE)
+
+
+MHdis.Gall.rep0
+
+
+meta.MHdis.Gall.rep0 <- metagen(OR_ln,
+                     SE,
+                     data=MHdis.Gall.rep0,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHdis.Gall.rep0
+
+forest(meta.MHdis.Gall.rep0)
+```
+
+
+### DISTRESS - directionality
+
+```{r}
+
+MHdis.Gall.rep1 <- neet2[which(neet2$Distress==1 & neet2$Gender=="all"),]
+
+head(MHdis.Gall.rep1)
+
+
+meta.MHdis.Gall.rep1 <- metagen(OR_ln,
+                     SE,
+                     data=MHdis.Gall.rep1,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHdis.Gall.rep1
+
+meta.MHdis.Gall.rep1.dir<-update.meta(meta.MHdis.Gall.rep1, 
+                                 byvar=Temporality.of.measures, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHdis.Gall.rep1.dir
+
+
+forest(meta.MHdis.Gall.rep1.dir)
+```
+
+### DISTRESS - age
+
+```{r}
+
+# MHdis.Gall.rep1.age <- neet3[which(neet3$Distress==1 & neet3$Gender=="all"),]
+MHdis.Gall.rep1.age <- filter(neet3, Distress==1 & Gender=="all")
+
+
+MHdis.Gall.rep1.age
+
+
+meta.MHdis.Gall.rep1.age <- metagen(OR_ln,
+                     SE,
+                     data=MHdis.Gall.rep1.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHdis.Gall.rep1.age
+
+meta.MHdis.Gall.rep1.age.dir<-update.meta(meta.MHdis.Gall.rep1.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHdis.Gall.rep1.age.dir
+
+
+forest(meta.MHdis.Gall.rep1.age.dir)
+```
+
+
+### DISTRESS - gender
+
+```{r}
+MHdis.Gbg.rep0 <- neet2[which(neet2$Distress==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHdis.Gbg.rep0)
+
+
+meta.MHdis.Gbg.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHdis.Gbg.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHdis.Gbg.rep0
+
+
+meta.MHdis.Gbg.rep0<-update.meta(meta.MHdis.Gbg.rep0, 
+                                      byvar=Gender, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHdis.Gbg.rep0
+
+forest(meta.MHdis.Gbg.rep0)
+```
+
+***
+
+## MOOD 
+mood = 1, gender = all, repeated sample = 0
+
+```{r}
+MHmood.Gall.rep0 <- neet2[which(neet2$Mood==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHmood.Gall.rep0)
+
+
+meta.MHmood.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHmood.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHmood.Gall.rep0
+```
+
+
+
+### MOOD - directionality
+
+```{r}
+MHmood.Gall.rep1 <- neet2[which(neet2$Mood==1 & neet2$Gender=="all"),]
+
+head(MHmood.Gall.rep1)
+
+
+meta.MHmood.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHmood.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHmood.Gall.rep1
+
+meta.MHmood.Gall.rep1.dir<-update.meta(meta.MHmood.Gall.rep1, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHmood.Gall.rep1.dir
+
+forest(meta.MHmood.Gall.rep1.dir)
+```
+
+### MOOD - age
+
+```{r}
+
+MHmood.Gall.rep0.age <- neet3[which(neet3$Mood==1 & neet3$Gender=="all" & is.na(neet3$Repeated_sample)),]
+
+MHmood.Gall.rep0.age
+
+MHmood.Gall.rep0.age <- bind_rows(MHmood.Gall.rep0.age, neet3[which(neet3$study_no=="gutierrez 2019 1"),])
+
+MHmood.Gall.rep0.age
+
+
+meta.MHmood.Gall.rep0.age <- metagen(OR_ln,
+                     SE,
+                     data=MHmood.Gall.rep0.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHmood.Gall.rep0.age
+
+meta.MHmood.Gall.rep0.age.dir<-update.meta(meta.MHmood.Gall.rep0.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHmood.Gall.rep0.age.dir
+
+
+forest(meta.MHmood.Gall.rep0.age.dir)
+```
+
+
+
+### MOOD - gender
+
+```{r}
+MHmood.Gbg.rep0 <- neet2[which(neet2$Mood==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHmood.Gbg.rep0)
+```
+
+***
+
+## ANXIETY 
+
+anxiety = 1, gender = all, repeated sample = 0
+
+```{r}
+MHanx.Gall.rep0 <- neet2[which(neet2$Anxiety==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHanx.Gall.rep0)
+
+meta.MHanx.Gall.rep0 <- metagen(OR_ln,
+                                 SE,
+                                 data=MHanx.Gall.rep0,
+                                 studlab=paste(Study),
+                                 comb.fixed = FALSE,
+                                 comb.random = TRUE,
+                                 method.tau = "DL",
+                                 hakn = FALSE,
+                                 prediction=FALSE,
+                                 sm="OR")
+meta.MHanx.Gall.rep0
+```
+
+
+### ANXIETY - directionality
+
+```{r}
+MHanx.Gall.rep1 <- neet2[which(neet2$Anxiety==1 & neet2$Gender=="all"),]
+
+head(MHanx.Gall.rep1)
+
+meta.MHanx.Gall.rep1 <- metagen(OR_ln,
+                                 SE,
+                                 data=MHanx.Gall.rep1,
+                                 studlab=paste(Study),
+                                 comb.fixed = FALSE,
+                                 comb.random = TRUE,
+                                 method.tau = "DL",
+                                 hakn = FALSE,
+                                 prediction=FALSE,
+                                 sm="OR")
+meta.MHanx.Gall.rep1
+meta.MHanx.Gall.rep1.dir<-update.meta(meta.MHanx.Gall.rep1, 
+                                       byvar=Temporality.of.measures, 
+                                       comb.random = F, 
+                                       comb.fixed = T)
+meta.MHanx.Gall.rep1.dir
+
+forest(meta.MHanx.Gall.rep1.dir)
+```
+
+### ANXIETY - age
+
+```{r}
+
+MHanx.Gall.rep0.age <- neet3[which(neet3$Anxiety==1 & neet3$Gender=="all" & is.na(neet3$Repeated_sample)),]
+
+MHanx.Gall.rep0.age
+
+MHanx.Gall.rep0.age <- bind_rows(MHanx.Gall.rep0.age, neet3[which(neet3$study_no=="gutierrez 2019 2"),])
+
+MHanx.Gall.rep0.age
+
+
+meta.MHanx.Gall.rep0.age <- metagen(OR_ln,
+                     SE,
+                     data=MHanx.Gall.rep0.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHanx.Gall.rep0.age
+
+meta.MHanx.Gall.rep0.age.dir<-update.meta(meta.MHanx.Gall.rep0.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHanx.Gall.rep0.age.dir
+
+
+forest(meta.MHanx.Gall.rep0.age.dir)
+```
+
+
+### ANXIETY - gender
+
+```{r}
+MHanx.Gbg.rep0 <- neet2[which(neet2$Anxiety==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHanx.Gbg.rep0)
+
+meta.MHanx.Gbg.rep0 <- metagen(OR_ln,
+                               SE,
+                               data=MHanx.Gbg.rep0,
+                               studlab=paste(Study),
+                               comb.fixed = FALSE,
+                               comb.random = TRUE,
+                               method.tau = "DL",
+                               hakn = FALSE,
+                               prediction=FALSE,
+                               sm="OR")
+meta.MHanx.Gbg.rep0
+
+
+meta.MHanx.Gbg.rep0<-update.meta(meta.MHanx.Gbg.rep0, 
+                                 byvar=Gender, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHanx.Gbg.rep0
+
+forest(meta.MHanx.Gbg.rep0)
+```
+
+***
+
+## BEHAVIOURAL
+
+behavioural = 1, gender = all, repeated sample = 0
+
+```{r}
+MHbeh.Gall.rep0 <- neet2[which(neet2$Behavioral==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHbeh.Gall.rep0)
+
+meta.MHbeh.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHbeh.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHbeh.Gall.rep0
+```
+
+### BEHAVIOURAL - directionality
+
+```{r}
+MHbeh.Gall.rep1 <- neet2[which(neet2$Behavioral==1 & neet2$Gender=="all"),]
+
+head(MHbeh.Gall.rep1)
+
+meta.MHbeh.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHbeh.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHbeh.Gall.rep1
+
+meta.MHbeh.Gall.rep1.dir<-update.meta(meta.MHbeh.Gall.rep1, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHbeh.Gall.rep1.dir
+
+forest(meta.MHbeh.Gall.rep1.dir)
+```
+
+### BEHAVIOURAL - age
+
+```{r}
+
+MHbeh.Gall.rep0.age <- neet3[which(neet3$Behavioral==1 & neet3$Gender=="all" & is.na(neet3$Repeated_sample)),]
+
+MHbeh.Gall.rep0.age
+
+MHbeh.Gall.rep0.age <- bind_rows(MHbeh.Gall.rep0.age, neet3[which(neet3$study_no=="gutierrez 2019 3"),])
+
+MHbeh.Gall.rep0.age
+
+
+meta.MHbeh.Gall.rep0.age <- metagen(OR_ln,
+                     SE,
+                     data=MHbeh.Gall.rep0.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHbeh.Gall.rep0.age
+
+meta.MHbeh.Gall.rep0.age.dir<-update.meta(meta.MHbeh.Gall.rep0.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHbeh.Gall.rep0.age.dir
+
+
+forest(meta.MHbeh.Gall.rep0.age.dir)
+```
+
+
+### BEHAVIOURAL - gender
+
+```{r}
+MHbeh.Gbg.rep0 <- neet2[which(neet2$Behavioral==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHbeh.Gbg.rep0)
+
+meta.MHbeh.Gbg.rep0 <- metagen(OR_ln,
+                               SE,
+                               data=MHbeh.Gbg.rep0,
+                               studlab=paste(Study),
+                               comb.fixed = FALSE,
+                               comb.random = TRUE,
+                               method.tau = "DL",
+                               hakn = FALSE,
+                               prediction=FALSE,
+                               sm="OR")
+meta.MHbeh.Gbg.rep0
+
+
+meta.MHbeh.Gbg.rep0<-update.meta(meta.MHbeh.Gbg.rep0, 
+                                 byvar=Gender, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHbeh.Gbg.rep0
+
+forest(meta.MHbeh.Gbg.rep0)
+```
+
+***
+
+## ALCOHOL
+alcohol = 1, gender = all, repeated sample = 0
+
+```{r}
+MHalc.Gall.rep0 <- neet2[which(neet2$Alcohol==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHalc.Gall.rep0)
+
+meta.MHalc.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHalc.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHalc.Gall.rep0
+```
+
+
+### ALCOHOL - directionality
+
+```{r}
+
+MHalc.Gall.rep1 <- neet2[which(neet2$Alcohol==1 & neet2$Gender=="all"),]
+
+head(MHalc.Gall.rep1)
+
+meta.MHalc.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHalc.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHalc.Gall.rep1
+
+meta.MHalc.Gall.rep1.dir<-update.meta(meta.MHalc.Gall.rep1, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHalc.Gall.rep1.dir
+
+forest(meta.MHalc.Gall.rep1.dir)
+```
+
+### ALCOHOL - age
+
+```{r}
+
+MHalc.Gall.rep0.age <- neet3[which(neet3$Alcohol==1 & neet3$Gender=="all" & is.na(neet3$Repeated_sample)),]
+
+MHalc.Gall.rep0.age
+
+MHalc.Gall.rep0.age <- bind_rows(MHalc.Gall.rep0.age, neet3[which(neet3$study_no=="gutierrez 2019 4"),])
+
+MHalc.Gall.rep0.age
+
+
+meta.MHalc.Gall.rep0.age <- metagen(OR_ln,
+                     SE,
+                     data=MHalc.Gall.rep0.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHalc.Gall.rep0.age
+
+meta.MHalc.Gall.rep0.age.dir<-update.meta(meta.MHalc.Gall.rep0.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHalc.Gall.rep0.age.dir
+
+
+forest(meta.MHalc.Gall.rep0.age.dir)
+```
+
+
+### ALCOHOL - gender
+
+```{r}
+MHalc.Gbg.rep0 <- neet2[which(neet2$Alcohol==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHalc.Gbg.rep0)
+```
+
+***
+
+## CANNABIS
+
+cannabis = 1, gender = all, repeated sample = 0
+
+```{r}
+MHcan.Gall.rep0 <- neet2[which(neet2$Cannabis==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHcan.Gall.rep0)
+
+meta.MHcan.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHcan.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHcan.Gall.rep0
+```
+
+
+### CANNABIS - directionality
+
+```{r}
+meta.MHcan.Gall.rep0.dir<-update.meta(meta.MHcan.Gall.rep0, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHcan.Gall.rep0.dir
+
+forest(meta.MHcan.Gall.rep0.dir)
+```
+
+### CANNABIS - age
+
+```{r}
+
+MHcan.Gall.rep1.age <- neet3[which(neet3$Cannabis==1 & neet3$Gender=="all"),]
+
+head(MHcan.Gall.rep1.age)
+
+
+meta.MHcan.Gall.rep1.age <- metagen(OR_ln,
+                     SE,
+                     data=MHcan.Gall.rep1.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHcan.Gall.rep1.age
+
+meta.MHcan.Gall.rep1.age.dir<-update.meta(meta.MHcan.Gall.rep1.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHcan.Gall.rep1.age.dir
+
+
+forest(meta.MHcan.Gall.rep1.age.dir)
+```
+
+
+### CANNABIS - gender
+
+```{r}
+MHcan.Gbg.rep0 <- neet2[which(neet2$Cannabis==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHcan.Gbg.rep0)
+```
+
+***
+
+## DRUG 
+
+drug = 1, gender = all, repeated sample = 0
+
+```{r}
+MHdrg.Gall.rep0 <- neet2[which(neet2$Drug==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHdrg.Gall.rep0)
+
+meta.MHdrg.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHdrg.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHdrg.Gall.rep0
+```
+
+### DRUG - directionality
+
+```{r}
+MHdrg.Gall.rep1 <- neet2[which(neet2$Drug==1 & neet2$Gender=="all"),]
+
+head(MHdrg.Gall.rep1)
+
+meta.MHdrg.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHdrg.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHdrg.Gall.rep1
+
+meta.MHdrg.Gall.rep1.dir<-update.meta(meta.MHdrg.Gall.rep1, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHdrg.Gall.rep1.dir
+
+forest(meta.MHdrg.Gall.rep1.dir)
+```
+
+### DRUG - age
+
+```{r}
+
+MHdrg.Gall.rep0.age <- neet3[which(neet3$Drug==1 & neet3$Gender=="all" & is.na(neet3$Repeated_sample)),]
+
+MHdrg.Gall.rep0.age
+
+MHdrg.Gall.rep0.age <- bind_rows(MHdrg.Gall.rep0.age, neet3[which(neet3$study_no=="gutierrez 2019 6"),])
+
+MHdrg.Gall.rep0.age
+
+
+meta.MHdrg.Gall.rep0.age <- metagen(OR_ln,
+                     SE,
+                     data=MHdrg.Gall.rep0.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHdrg.Gall.rep0.age
+
+meta.MHdrg.Gall.rep0.age.dir<-update.meta(meta.MHdrg.Gall.rep0.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHdrg.Gall.rep0.age.dir
+
+
+forest(meta.MHdrg.Gall.rep0.age.dir)
+```
+
+### DRUG - gender
+
+```{r}
+MHdrg.Gbg.rep0 <- neet2[which(neet2$Drug==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHdrg.Gbg.rep0)
+
+meta.MHdrg.Gbg.rep0 <- metagen(OR_ln,
+                               SE,
+                               data=MHdrg.Gbg.rep0,
+                               studlab=paste(Study),
+                               comb.fixed = FALSE,
+                               comb.random = TRUE,
+                               method.tau = "DL",
+                               hakn = FALSE,
+                               prediction=FALSE,
+                               sm="OR")
+meta.MHdrg.Gbg.rep0
+
+
+meta.MHdrg.Gbg.rep0<-update.meta(meta.MHdrg.Gbg.rep0, 
+                                 byvar=Gender, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHdrg.Gbg.rep0
+
+forest(meta.MHdrg.Gbg.rep0)
+```
+
+***
+
+## SUICIDAL
+
+suicidal = 1, gender = all, repeated sample = 0
+
+```{r}
+MHsui.Gall.rep0 <- neet2[which(neet2$Suicidal==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHsui.Gall.rep0)
+
+meta.MHsui.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHsui.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHsui.Gall.rep0
+```
+
+
+### SUICIDAL - directionality
+
+```{r}
+MHsui.Gall.rep1 <- neet2[which(neet2$Suicidal==1 & neet2$Gender=="all"),]
+
+head(MHsui.Gall.rep1)
+
+meta.MHsui.Gall.rep1 <- metagen(OR_ln,
+                                SE,
+                                data=MHsui.Gall.rep1,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHsui.Gall.rep1
+
+meta.MHsui.Gall.rep1.dir<-update.meta(meta.MHsui.Gall.rep1, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHsui.Gall.rep1.dir
+
+forest(meta.MHsui.Gall.rep1.dir)
+```
+
+### SUICIDAL - age
+
+```{r}
+
+MHsui.Gall.rep0.age <- neet3[which(neet3$Suicidal==1 & neet3$Gender=="all" & is.na(neet3$Repeated_sample)),]
+
+MHsui.Gall.rep0.age
+
+MHsui.Gall.rep0.age <- bind_rows(MHsui.Gall.rep0.age, neet3[which(neet3$study_no=="gutierrez 2019 9"),])
+
+MHsui.Gall.rep0.age
+
+
+meta.MHsui.Gall.rep0.age <- metagen(OR_ln,
+                     SE,
+                     data=MHsui.Gall.rep0.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHsui.Gall.rep0.age
+
+meta.MHsui.Gall.rep0.age.dir<-update.meta(meta.MHsui.Gall.rep0.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHsui.Gall.rep0.age.dir
+
+
+forest(meta.MHsui.Gall.rep0.age.dir)
+```
+
+pooling suicidal attempts aged 18 and over, specifically Power 2015 (OR 3.1) and Gutierrez 2018 (OR 2.75)
+
+```{r}
+
+MHsuiatt <- neet3[c(63,95),]
+
+MHsuiatt
+                          
+meta.MHsuiatt <- metagen(OR_ln,
+                     SE,
+                     data=MHsuiatt,
+                     studlab=paste(Study),
+                     comb.fixed = T,
+                     comb.random = F,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHsuiatt
+
+forest(meta.MHsuiatt)
+
+```
+
+
+### SUICIDAL - gender
+
+```{r}
+MHsui.Gbg.rep0 <- neet2[which(neet2$Suicidal==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHsui.Gbg.rep0)
+```
+
+***
+
+## ANY
+
+any = 1, gender = all, repeated sample = 0
+
+```{r}
+MHany.Gall.rep0 <- neet2[which(neet2$Any==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHany.Gall.rep0)
+```
+
+Gen says to only use Power 2015's "Any lifetime disorder" here and "Any dx in adol" for directionality
+
+```{r}
+MHany.Gall.rep0 <- MHany.Gall.rep0[c(1,2,4),]
+
+head(MHany.Gall.rep0)
+
+meta.MHany.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHany.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHany.Gall.rep0
+```
+
+### ANY - directionality
+
+```{r}
+MHany.Gall.rep0 <- neet2[which(neet2$Any==1 & neet2$Gender=="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHany.Gall.rep0)
+```
+
+Gen says to only use Power 2015's "Any dx in adol" for directionality
+```{r}
+MHany.Gall.rep0 <- MHany.Gall.rep0[c(1,3,4),]
+
+head(MHany.Gall.rep0)
+
+meta.MHany.Gall.rep0 <- metagen(OR_ln,
+                                SE,
+                                data=MHany.Gall.rep0,
+                                studlab=paste(Study),
+                                comb.fixed = FALSE,
+                                comb.random = TRUE,
+                                method.tau = "DL",
+                                hakn = FALSE,
+                                prediction=FALSE,
+                                sm="OR")
+meta.MHany.Gall.rep0
+
+
+meta.MHany.Gall.rep0.dir<-update.meta(meta.MHany.Gall.rep0, 
+                                      byvar=Temporality.of.measures, 
+                                      comb.random = F, 
+                                      comb.fixed = T)
+meta.MHany.Gall.rep0.dir
+
+forest(meta.MHany.Gall.rep0.dir)
+```
+
+### ANY - age
+
+makes sense to use "any lifetime disorder" (the more comprehensive measure) for this analysis
+```{r}
+
+MHany.Gall.rep1.age <- neet3[which(neet3$Any==1 & neet3$Gender=="all"),]
+
+MHany.Gall.rep1.age <- MHany.Gall.rep1.age[c(1,2,4),]
+
+head(MHany.Gall.rep1.age)
+
+
+meta.MHany.Gall.rep1.age <- metagen(OR_ln,
+                     SE,
+                     data=MHany.Gall.rep1.age,
+                     studlab=paste(Study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+meta.MHany.Gall.rep1.age
+
+meta.MHany.Gall.rep1.age.dir<-update.meta(meta.MHany.Gall.rep1.age, 
+                                 byvar=Age_at_interview, 
+                                 comb.random = F, 
+                                 comb.fixed = T)
+meta.MHany.Gall.rep1.age.dir
+
+
+forest(meta.MHany.Gall.rep1.age.dir)
+```
+
+
+### ANY - gender
+
+```{r}
+MHany.Gbg.rep0 <- neet2[which(neet2$Any==1 & neet2$Gender!="all" & is.na(neet2$Repeated_sample)),]
+
+head(MHany.Gbg.rep0)
+```
+
