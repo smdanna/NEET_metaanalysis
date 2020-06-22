@@ -21,7 +21,7 @@ library(metafor)
 library(dplyr)
 
 # load data from file
-neet <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet 20200617.csv")
+neet <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet 20200619.csv")
 View(neet)
 str(neet)
 
@@ -203,7 +203,7 @@ meta.dis
 #### · mood #### 
 
 forest(meta.mood, 
-       text.random = "Random effects model - mood", 
+       text.random = "Mood (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -218,7 +218,7 @@ forest(meta.mood,
 
 svg(file = 'mood_8x268_xlim.svg', width = 8, height = 2.68) 
 plot.mood <- forest(meta.mood,
-                    text.random = "Random effects model - mood",
+                    text.random = "Mood (random effects)",
                     xlim = c(0.1,10), 
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -235,7 +235,7 @@ dev.off()
 #### · anxiety #### 
 
 forest(meta.anx, 
-       text.random = "Random effects model - anxiety", 
+       text.random = "Anxiety (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -250,7 +250,7 @@ forest(meta.anx,
 
 svg(file = 'anx_8x245_xlim.svg', width = 8, height = 2.45) 
 plot.anx <- forest(meta.anx,
-                    text.random = "Random effects model - anxiety",
+                    text.random = "Anxiety (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -267,7 +267,7 @@ dev.off()
 #### · behavioural #### 
 
 forest(meta.beh, 
-       text.random = "Random effects model - behavioural",
+       text.random = "Behavioural (random effects)",
        xlim = c(0.1,10), 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
@@ -283,7 +283,7 @@ forest(meta.beh,
 
 svg(file = 'beh_8x29_xlim.svg', width = 8, height = 2.9) 
 plot.beh <- forest(meta.beh,
-                    text.random = "Random effects model - behavioural",
+                    text.random = "Behavioural (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -300,7 +300,7 @@ dev.off()
 #### · alcohol #### 
 
 forest(meta.alc, 
-       text.random = "Random effects model - alcohol", 
+       text.random = "Alcohol use (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -315,7 +315,7 @@ forest(meta.alc,
 
 svg(file = 'alc_8x245_xlim.svg', width = 8, height = 2.45) 
 plot.alc <- forest(meta.alc,
-                    text.random = "Random effects model - alcohol",
+                    text.random = "Alcohol use (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -332,7 +332,7 @@ dev.off()
 #### · cannabis #### 
 
 forest(meta.can, 
-       text.random = "Random effects model - cannabis", 
+       text.random = "Cannabis use (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -347,7 +347,7 @@ forest(meta.can,
 
 svg(file = 'can_8x268_xlim.svg', width = 8, height = 2.68) 
 plot.can <- forest(meta.can,
-                    text.random = "Random effects model - cannabis",
+                    text.random = "Cannabis use (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -364,7 +364,7 @@ dev.off()
 #### · drug #### 
 
 forest(meta.drg, 
-       text.random = "Random effects model - drug", 
+       text.random = "Drug use (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -379,7 +379,7 @@ forest(meta.drg,
 
 svg(file = 'drg_8x245_xlim.svg', width = 8, height = 2.45) 
 plot.drg <- forest(meta.drg,
-                    text.random = "Random effects model - drug use",
+                    text.random = "Drug use (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -396,7 +396,7 @@ dev.off()
 #### · any problem #### 
 
 forest(meta.any, 
-       text.random = "Random effects model - any problem", 
+       text.random = "Any disorder (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -410,7 +410,7 @@ forest(meta.any,
 
 svg(file = 'any_8x2_xlim.svg', width = 8, height = 2) 
 plot.any <- forest(meta.any,
-                    text.random = "Random effects model - any problem",
+                    text.random = "Any disorder (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -427,7 +427,7 @@ dev.off()
 #### · suicidal #### 
 
 forest(meta.sui, 
-       text.random = "Random effects model - suicidal", 
+       text.random = "Suicidal behaviours (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -442,7 +442,7 @@ forest(meta.sui,
 
 svg(file = 'sui_8x223_xlim.svg', width = 8, height = 2.23) 
 plot.sui <- forest(meta.sui,
-                    text.random = "Random effects model - suicidal",
+                    text.random = "Suicidal behaviours (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -459,7 +459,7 @@ dev.off()
 #### · distress #### 
 
 forest(meta.dis, 
-       text.random = "Random effects model - distress", 
+       text.random = "Psychological distress (random effects)", 
        type.random = "diamond",
        leftcols=c("studlab", "N"),
        leftlabs = c("Study","n"),
@@ -474,7 +474,7 @@ forest(meta.dis,
 
 svg(file = 'dis_8x29_xlim.svg', width = 8, height = 2.9) 
 plot.dis <- forest(meta.dis,
-                    text.random = "Random effects model - distress",
+                    text.random = "Psychological distress (random effects)",
                     xlim = c(0.1,10),
                     type.random = "diamond",
                     leftcols=c("studlab", "N"),
@@ -487,6 +487,7 @@ plot.dis <- forest(meta.dis,
                     col.diamond = "white",
                     print.tau2=F)
 dev.off() 
+
 
 #### testing plots and saving #### 
 
