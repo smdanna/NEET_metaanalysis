@@ -72,6 +72,9 @@ exp(0.43)
 summary(mh.rve)
 str(mh.rve)  
 
+# check out the code used to exponentiate estimates and CIs from the models
+# https://brunwasser.github.io/whorsv.github.io/#3_workspace_preparation_steps
+
 # forest plot
 forest.robu(mh.rve, es.lab = "Mental.health.measures", study.lab = "Study",
             "log OR" = effect.size, # optional column
@@ -552,3 +555,4 @@ exp(0.147)
 
 exp(-0.226)
 exp(0.52)
+
