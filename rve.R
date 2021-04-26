@@ -19,7 +19,7 @@ library(dplyr)
 library(grid)
 
 # load data from file
-neet <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet 20201027.csv")
+neet <- read.csv("~/Dropbox/PEPP/NEET meta-analysis/metaanalysis/neet 20210423.csv")
 
 
 
@@ -70,7 +70,7 @@ exp(0.43)
 
 # show more of what's going on 
 summary(mh.rve)
-str(mh.rve)  
+str(mh.rve)
 
 # check out the code used to exponentiate estimates and CIs from the models
 # https://brunwasser.github.io/whorsv.github.io/#3_workspace_preparation_steps
@@ -80,6 +80,15 @@ forest.robu(mh.rve, es.lab = "Mental.health.measures", study.lab = "Study",
             "log OR" = effect.size, # optional column
             "Weight" = r.weights)   # optional column
 dev.off()
+
+# forest plot for Psychol Med
+
+pdf(file ='rve.mh_PsychMed_8.5x12.8.pdf', width = 8.5, height = 12.8)
+forest.robu(mh.rve, es.lab = "Mental.health.measures", study.lab = "Study",
+            "Log OR" = effect.size,
+            "Variance" = var.eff.size)
+dev.off()
+
 
 # mh _ directionality ####
 
@@ -269,6 +278,13 @@ forest.robu(su.rve, es.lab = "Mental.health.measures", study.lab = "Study",
             "n" = N)
 dev.off()
 
+# forest plot for Psychol Med
+pdf(file ='rve.su_PsychMed_8.5x9.45.pdf', width = 8.5, height = 9.45)
+forest.robu(su.rve, es.lab = "Mental.health.measures", study.lab = "Study",
+            "Log OR" = effect.size,
+            "Variance" = var.eff.size)
+dev.off()
+
 # su _ directionality ####
 
 alc.dir <- filter(neet, Alcohol==1 & Gender=="all")
@@ -429,6 +445,14 @@ forest.robu(all.rve, es.lab = "Mental.health.measures", study.lab = "Study",
             "log OR" = effect.size, # optional column
             "Weight" = r.weights)   # optional column
 dev.off()
+
+# forest plot for Psychol Med
+pdf(file ='rve.all_PsychMed_8.5x18.65.pdf', width = 8.5, height = 18.65)
+forest.robu(all.rve, es.lab = "Mental.health.measures", study.lab = "Study",
+            "Log OR" = effect.size,
+            "Variance" = var.eff.size)
+dev.off()
+
 
 # all _ directionality ####
 
